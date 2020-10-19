@@ -19,15 +19,21 @@ import tifffile
 #     return B
 
 def BCH(image):
+    r"""
+    Brightness Chroma Hue parameter computation function
+    Input: torch image with shape of (batch, channel, height, width)
+    Ouput: scalar B
+    """
     matrix_XYZ = torch.tensor(((0.49, 0.31, 0.2), 
                                (0.17697, 0.8124, 0.01063), 
-                               (0.0, 0.01, 0.99)), dtype = torch.float)/0.17697
-    # print(matrix_XYZ)
+                               (0.0, 0.01, 0.99)), dtype = torch.float32)/0.17697
+    image = image[0,:,:,:].permute(1,2,0)
+    # print(image.shape)
     XYZ = torch.matmul(image, matrix_XYZ)
     
     matrix_DEF = torch.tensor(((0.2053, 0.7125, 0.467), 
                                (1.9537, -1.2797, -0.4429), 
-                               (-0.3655, 1.012,-0.6104)), dtype = torch.float)
+                               (-0.3655, 1.012,-0.6104)), dtype = torch.float32)
     DEF = torch.matmul(XYZ, matrix_DEF)
 
     B = torch.sqrt(torch.mean(DEF[:,:,0])**2 + 
@@ -40,9 +46,18 @@ if __name__ == '__main__':
     img_gt = tifffile.imread(r"00001_00_10s.tiff")/65536.0    #RGB image, ndarray
     img_in = tifffile.imread(r"00076_00_0.1s.tiff")/65536.0
 
+    img_gt = torch.tensor(img_gt, dtype = torch.float32)
+    img_in = torch.tensor(img_in, dtype = torch.float32)
+    
+    img_gt = torch.unsqueeze(img_gt, dim=0)
+    img_in = torch.unsqueeze(img_in, dim=0)
+
+    img_gt = img_gt.permute(0, 3, 1, 2)
+    img_in = img_in.permute(0, 3, 1, 2)
+
     start = time()
-    print(BCH(torch.tensor(img_gt, dtype = torch.float)))
+    print(BCH(img_gt))
     print("Time: ", time()-start)
     start = time()
-    print(BCH(torch.tensor(img_in, dtype = torch.float)))
+    print(BCH(img_in))
     print("Time: ", time()-start)
