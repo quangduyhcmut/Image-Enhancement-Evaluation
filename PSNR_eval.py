@@ -9,7 +9,7 @@ def PSNR(img1, img2):
     # PIXEL_MAX = 65536
     PIXEL_MAX = 1.0
     mse = torch.mean((img1 - img2) ** 2,dim=(1,2,3))
-    psnr = (20 * torch.log(PIXEL_MAX / torch.sqrt(mse)))
+    psnr = (20 * torch.log10(PIXEL_MAX / torch.sqrt(mse)))
     psnr_batch = torch.mean(psnr).item()
     if psnr_batch > 10000:
         return 100.0
